@@ -1,0 +1,36 @@
+.status-page {
+  max-width: 800px;
+  margin: 40px auto;
+  padding: 20px;
+  font-family: sans-serif;
+  background-color: #f9f9f9;
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+.status-overview p {
+  font-size: 16px;
+  margin: 6px 0;
+}
+
+.assignments-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+}
+
+.assignments-table th,
+.assignments-table td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: left;
+}
+
+.assignments-table th {
+  background-color: #4CAF50;
+  color: white;
+}
+
+.assignments-table tr:nth-child(even) {
+  background-color: #f2f2f2;
+}
