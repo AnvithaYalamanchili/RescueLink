@@ -1,27 +1,23 @@
-const express=require('express');
-const router=express.Router();
-const pool=require('../db');
+const express = require("express");
+const router = express.Router();
+const pool = require("../db");
 
-router.post('/',async(req,res)=>{
-    try{
-        const{
-            name,
-            phone,
-            skills,
-            lat,
-            lng,
-            available
-        }=req.body;
+// POST /api/volunteers
+router.post("/", async (req, res) => {
+  try {
+    const { name, phone, skills, zone } = req.body;
 
-        const result=await pool.query(
-            `INSERT INTO volunteers(name,phone,skills,lat,lng,available)
-            VALUES($1,$2,$3,$4,$5,$6) RETURNING *`,
-            [name,phone,skills,lat,lng,available]);
-        res.json(result.rows[0]);
-    }
-    catch(err){
-        console.error(err.message);
-        res.status(500).send("Internal server error");
-    }
+    const result = await pool.query(
+      `INSERT INTO volunteers(name, phone, skills, zone)
+       VALUES($1, $2, $3, $4) RETURNING *`,
+      [name, phone, skills, zone]
+    );
+
+    res.json(result.rows[0]);
+  } catch (err) {
+    console.error("VOLUNTEER REG ERROR:", err);
+    res.status(500).json({ message: "Internal server error" });
+  }
 });
-module.exports=router;
+
+module.exports = router;

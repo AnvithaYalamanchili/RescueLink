@@ -39,7 +39,7 @@ const HomePage = () => {
         <p>Connecting people in need with volunteers, shelters, and emergency resources in real time.</p>
         <div className="hero-buttons">
           <button className="btn btn-primary" onClick={()=>navigate("/request-help")}>Request Help Now</button>
-          <button className="btn btn-secondary">Volunteer to Help</button>
+          <button className="btn btn-secondary" onClick={()=>navigate("/volunteer-register")}>Volunteer to Help</button>
           <button className="btn btn-tertiary">Provide Relief (NGO)</button>
         </div>
       </div>

@@ -68,7 +68,7 @@ export default function RequestHelp() {
       setTimeout(() => {
         // Assuming backend returns the requestId
         // If your backend doesn't return it, use guest_id or another identifier
-        const requestId = result.requestId || data.guest_id;
+        const requestId = result.id;
         navigate(`/status/${requestId}`);
       }, 1500); // 1.5 seconds delay to show message
 

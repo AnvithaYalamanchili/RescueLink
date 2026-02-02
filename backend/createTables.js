@@ -76,16 +76,32 @@ const createTables = async () => {
       );
     `);
 
-    // Request Assignments (Volunteer)
     await pool.query(`
-      CREATE TABLE IF NOT EXISTS request_assignments (
-        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-        request_id UUID REFERENCES emergency_requests(id) ON DELETE CASCADE,
-        volunteer_id UUID REFERENCES volunteers(id) ON DELETE CASCADE,
-        status VARCHAR(20) DEFAULT 'assigned',
-        assigned_at TIMESTAMP DEFAULT NOW()
-      );
-    `);
+  ALTER TABLE volunteers
+  ADD COLUMN IF NOT EXISTS zone VARCHAR(50),
+  ADD COLUMN IF NOT EXISTS lat NUMERIC(9,6),
+  ADD COLUMN IF NOT EXISTS lng NUMERIC(9,6),
+  ADD COLUMN IF NOT EXISTS available BOOLEAN DEFAULT TRUE;
+`);
+
+    // Request Assignments (Volunteer)
+    // Request Assignments (Volunteer)
+await pool.query(`
+  CREATE TABLE IF NOT EXISTS request_assignments (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    request_id UUID REFERENCES emergency_requests(id) ON DELETE CASCADE,
+    volunteer_id UUID REFERENCES volunteers(id) ON DELETE CASCADE,
+    status VARCHAR(20) DEFAULT 'assigned',
+    people_served INT DEFAULT 0,  -- <-- add this column
+    assigned_at TIMESTAMP DEFAULT NOW()
+  );
+`);
+
+await pool.query(`
+  ALTER TABLE request_assignments
+  ADD COLUMN IF NOT EXISTS people_served INT DEFAULT 0;
+`);
+
 
     // Relief Providers (NGOs, shelters)
     await pool.query(`

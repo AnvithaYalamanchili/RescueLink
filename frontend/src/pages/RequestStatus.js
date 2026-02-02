@@ -1,10 +1,9 @@
-// src/pages/RequestStatus.js
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import "./RequestStatus.css";
 
 export default function RequestStatus() {
-  const { requestId } = useParams(); // assumes URL like /status/:requestId
+  const { requestId } = useParams();
   const [statusData, setStatusData] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -17,18 +16,21 @@ export default function RequestStatus() {
         setLoading(false);
       } catch (err) {
         console.error("Failed to fetch status:", err);
+        setLoading(false);
       }
     };
 
     fetchStatus();
-    const interval = setInterval(fetchStatus, 5000); // refresh every 5 seconds
+    const interval = setInterval(fetchStatus, 5000);
     return () => clearInterval(interval);
   }, [requestId]);
 
   if (loading) return <p>Loading status...</p>;
-  if (!statusData) return <p>Unable to load status.</p>;
+  if (!statusData || !statusData.request) return <p>Unable to load status.</p>;
 
-  const { request, assignments, progress } = statusData;
+  const request = statusData.request;
+  const assignments = statusData.assignments || [];
+  const progress = statusData.progress ?? 0;
 
   return (
     <div className="status-page">
@@ -51,13 +53,19 @@ export default function RequestStatus() {
           </tr>
         </thead>
         <tbody>
-          {assignments.map(a => (
-            <tr key={a.id}>
-              <td>{a.volunteer_name}</td>
-              <td>{a.status}</td>
-              <td>{a.people_served || 0}</td>
+          {assignments.length === 0 ? (
+            <tr>
+              <td colSpan="3">No volunteers assigned yet</td>
             </tr>
-          ))}
+          ) : (
+            assignments.map(a => (
+              <tr key={a.id}>
+                <td>{a.volunteer_name}</td>
+                <td>{a.status}</td>
+                <td>{a.people_served || 0}</td>
+              </tr>
+            ))
+          )}
         </tbody>
       </table>
     </div>
