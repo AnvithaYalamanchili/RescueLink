@@ -1,6 +1,6 @@
 import { AlertTriangle } from "lucide-react";
 import { useState } from "react";
-import { useNavigate } from "react-router-dom"; // <-- import useNavigate
+import { useNavigate } from "react-router-dom";
 import "./RequestHelp.css";
 
 export default function RequestHelp() {
@@ -10,45 +10,99 @@ export default function RequestHelp() {
     people_count: 1,
     contact_number: "",
     can_call: false,
-    lat: "",
-    lng: "",
-    address: ""  
+    address: "",
+    severity: "medium" // Added severity field
   });
   
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [message, setMessage] = useState({ text: "", type: "" });
 
-  const navigate = useNavigate(); // <-- initialize navigate
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
-    setForm({ ...form, [name]: type === "checkbox" ? checked : value });
+    setForm({ 
+      ...form, 
+      [name]: type === "checkbox" ? checked : value 
+    });
+  };
+
+  const handleEmergencyTypeChange = (e) => {
+    const type = e.target.value;
+    setForm({ 
+      ...form, 
+      emergency_type: type,
+      // Auto-set severity based on emergency type
+      severity: getSeverityForType(type)
+    });
+  };
+
+  const getSeverityForType = (type) => {
+    const highSeverity = ['medical', 'fire', 'accident'];
+    const mediumSeverity = ['flood', 'earthquake'];
+    
+    if (highSeverity.includes(type)) return "high";
+    if (mediumSeverity.includes(type)) return "medium";
+    return "low";
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-    setMessage({ text: "", type: "" });
+  e.preventDefault();
+  setIsSubmitting(true);
+  setMessage({ text: "", type: "" });
 
-    const data = {
-      ...form,
-      guest_id: "guest_" + Date.now(),
-      lat: null,
-      lng: null
-    };
+  // Basic validation
+  if (!form.emergency_type) {
+    setMessage({ 
+      text: "Please select an emergency type", 
+      type: "error" 
+    });
+    setIsSubmitting(false);
+    return;
+  }
 
-    try {
-      const res = await fetch("http://localhost:5000/api/emergency", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data)
-      });
+  if (!form.description.trim()) {
+    setMessage({ 
+      text: "Please describe the emergency situation", 
+      type: "error" 
+    });
+    setIsSubmitting(false);
+    return;
+  }
 
-      const result = await res.json();
+  if (!form.contact_number.trim()) {
+    setMessage({ 
+      text: "Please provide a contact number", 
+      type: "error" 
+    });
+    setIsSubmitting(false);
+    return;
+  }
 
-      // Show success message briefly
+  // Validate phone number has at least 10 digits
+  const phoneDigits = form.contact_number.replace(/\D/g, '');
+  if (phoneDigits.length < 10) {
+    setMessage({ 
+      text: "Please provide a valid phone number with at least 10 digits", 
+      type: "error" 
+    });
+    setIsSubmitting(false);
+    return;
+  }
+
+  try {
+    const res = await fetch("http://localhost:5000/api/emergency", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(form)
+    });
+
+    const result = await res.json();
+    
+    if (result.success) {
+      // Show success message
       setMessage({ 
-        text: "Help request sent successfully! Redirecting to status page...", 
+        text: result.message || "Help request sent successfully! Redirecting to status page...", 
         type: "success" 
       });
 
@@ -59,124 +113,231 @@ export default function RequestHelp() {
         people_count: 1,
         contact_number: "",
         can_call: false,
-        lat: "",
-        lng: "",
-        address: ""  
+        address: "",
+        severity: "medium"
       });
 
       // Navigate to status page after short delay
       setTimeout(() => {
-        // Assuming backend returns the requestId
-        // If your backend doesn't return it, use guest_id or another identifier
-        const requestId = result.id;
-        navigate(`/status/${requestId}`);
-      }, 1500); // 1.5 seconds delay to show message
-
-    } catch (err) {
+        if (result.data && result.data.requestId) {
+          navigate(`/status/${result.data.requestId}`);
+        } else {
+          setMessage({ 
+            text: "Request submitted but failed to get request ID. Please contact support.", 
+            type: "error" 
+          });
+        }
+      }, 2000);
+    } else {
       setMessage({ 
-        text: "Failed to send request. Please try again or contact emergency services directly.", 
+        text: result.message || "Failed to send request. Please try again.", 
         type: "error" 
       });
-    } finally {
-      setIsSubmitting(false);
     }
-  };
+  } catch (err) {
+    console.error("Submission error:", err);
+    setMessage({ 
+      text: "Network error. Please check your internet connection and try again.", 
+      type: "error" 
+    });
+  } finally {
+    setIsSubmitting(false);
+  }
+};
+
+  const emergencyTypes = [
+    { value: "medical", label: "🚑 Medical Emergency" },
+    { value: "fire", label: "🔥 Fire Emergency" },
+    { value: "accident", label: "🚗 Accident/Trauma"},
+    { value: "flood", label: "🌊 Flood/Water Emergency" },
+    { value: "earthquake", label: "🌍 Earthquake" },
+    { value: "trapped", label: "🆘 Trapped/Rescue Needed" },
+    { value: "food_water", label: "🍞 Food/Water Shortage"},
+    { value: "shelter", label: "🏠 Shelter/Housing Emergency"},
+    { value: "clothing", label: "👕 Clothing/Basic Needs"},
+    { value: "transport", label: "🚐 Transportation Needed"},
+    { value: "psychological", label: "🧠 Psychological Support"},
+    { value: "other", label: "⚠️ Other Emergency"}
+  ];
 
   return (
-    <div className="form-page">
-      <form onSubmit={handleSubmit}>
+    <div className="request-help-container">
+      <div className="request-help-card">
         <div className="emergency-header">
           <AlertTriangle className="emergency-icon" />
           <h2 className="title-help">Request Emergency Help</h2>
-        </div>
-        
-        <div className="form-group select-container">
-          <select 
-            name="emergency_type" 
-            value={form.emergency_type} 
-            onChange={handleChange} 
-            required
-          >
-            <option value="">Select emergency type</option>
-            <option value="medical">🚑 Medical Emergency</option>
-            <option value="fire">🔥 Fire Emergency</option>
-            <option value="accident">🚗 Accident</option>
-            <option value="flood">🌊 Flood</option>
-            <option value="earthquake">🌍 Earthquake</option>
-            <option value="shelter">🏠 Shelter/Relief Support</option>
-            <option value="other">⚠️ Other Emergency</option>
-          </select>
-        </div>
-        
-        <div className="form-group">
-          <textarea 
-            name="description" 
-            placeholder="Describe the situation in detail..." 
-            value={form.description}
-            onChange={handleChange} 
-          />
-        </div>
-        
-        <div className="form-group">
-          <input 
-            type="number" 
-            name="people_count" 
-            placeholder="Number of people affected" 
-            value={form.people_count}
-            onChange={handleChange} 
-            min="1"
-          />
-        </div>
-        
-        <div className="form-group">
-          <input 
-            name="contact_number" 
-            placeholder="Contact phone number" 
-            value={form.contact_number}
-            onChange={handleChange} 
-            type="tel"
-          />
-        </div>
-        
-        <div className="checkbox-container">
-          <input 
-            type="checkbox" 
-            name="can_call" 
-            id="can-call" 
-            checked={form.can_call}
-            onChange={handleChange} 
-          />
-          <label htmlFor="can-call">
-            Authorities may contact me by phone
-          </label>
-        </div>
-        
-        <div className="form-group">
-          <input 
-            name="address" 
-            placeholder="Your current location/address" 
-            value={form.address}
-            onChange={handleChange} 
-          />
+          <p className="subtitle-help">
+            Fill out this form to request immediate assistance. Our volunteers and partners will respond as quickly as possible.
+          </p>
         </div>
 
-        <button type="submit" disabled={isSubmitting}>
-          {isSubmitting ? (
-            <>
-              <span className="spinner"></span>
-              Sending Request...
-            </>
-          ) : (
-            "Request Emergency Assistance"
-          )}
-        </button>
-
-        {message.text && (
-          <div className={`alert-message ${message.type}-message`}>
-            {message.text}
+        <form onSubmit={handleSubmit}>
+          {/* Emergency Type */}
+          <div className="form-group">
+            <label htmlFor="emergency_type">
+              <span className="required">*</span> Type of Emergency
+            </label>
+            <select 
+              id="emergency_type"
+              name="emergency_type" 
+              value={form.emergency_type} 
+              onChange={handleEmergencyTypeChange} 
+              required
+              className="select-emergency"
+            >
+              <option value="">-- Select emergency type --</option>
+              {emergencyTypes.map(type => (
+                <option key={type.value} value={type.value}>
+                  {type.label}
+                </option>
+              ))}
+            </select>
+            {form.emergency_type && (
+              <div className={`severity-indicator severity-${form.severity}`}>
+                <span className="severity-label">
+                  {form.severity === 'high' ? '🚨 HIGH PRIORITY' : 
+                   form.severity === 'medium' ? '⚠️ MEDIUM PRIORITY' : 
+                   'ℹ️ LOW PRIORITY'}
+                </span>
+              </div>
+            )}
           </div>
-        )}
-      </form>
+          
+          {/* Description */}
+          <div className="form-group">
+            <label htmlFor="description">
+              <span className="required">*</span> Situation Description
+            </label>
+            <textarea 
+              id="description"
+              name="description" 
+              placeholder="Please describe the emergency in detail. Include: What happened? Who is involved? What immediate help is needed?" 
+              value={form.description}
+              onChange={handleChange} 
+              rows="5"
+              required
+            />
+            <div className="char-count">
+              {form.description.length}/500 characters
+            </div>
+          </div>
+          
+          {/* People Count and Contact */}
+          <div className="form-row">
+            <div className="form-group">
+              <label htmlFor="people_count">
+                Number of People Affected
+              </label>
+              <input 
+                id="people_count"
+                type="number" 
+                name="people_count" 
+                placeholder="How many people need help?" 
+                value={form.people_count}
+                onChange={handleChange} 
+                min="1"
+                max="100"
+              />
+            </div>
+            
+            <div className="form-group">
+              <label htmlFor="contact_number">
+                <span className="required">*</span> Contact Phone Number
+              </label>
+              <input 
+                id="contact_number"
+                name="contact_number" 
+                placeholder="Your phone number (for follow-up)" 
+                value={form.contact_number}
+                onChange={handleChange} 
+                type="tel"
+                required
+              />
+            </div>
+          </div>
+          
+          {/* Address/Location */}
+          <div className="form-group">
+            <label htmlFor="address">
+              Location/Address
+            </label>
+            <input 
+              id="address"
+              name="address" 
+              placeholder="Where is the emergency? (Street, landmark, city)" 
+              value={form.address}
+              onChange={handleChange} 
+            />
+            <p className="field-hint">
+              Provide as much detail as possible to help volunteers find you
+            </p>
+          </div>
+          
+          {/* Contact Permission */}
+          <div className="checkbox-container">
+            <input 
+              type="checkbox" 
+              name="can_call" 
+              id="can-call" 
+              checked={form.can_call}
+              onChange={handleChange} 
+            />
+            <label htmlFor="can-call">
+              I give permission for volunteers or emergency services to contact me at the provided number
+            </label>
+          </div>
+
+          {/* Severity Selection (optional, auto-set) */}
+          <div className="form-group">
+            <label>Emergency Priority</label>
+            <div className="severity-options">
+              {['low', 'medium', 'high'].map(level => (
+                <label key={level} className={`severity-option ${form.severity === level ? 'selected' : ''}`}>
+                  <input
+                    type="radio"
+                    name="severity"
+                    value={level}
+                    checked={form.severity === level}
+                    onChange={handleChange}
+                  />
+                  <span className={`severity-dot severity-${level}`}></span>
+                  <span className="severity-text">
+                    {level === 'high' ? 'High (Immediate danger)' :
+                     level === 'medium' ? 'Medium (Urgent but stable)' :
+                     'Low (Non-critical)'}
+                  </span>
+                </label>
+              ))}
+            </div>
+          </div>
+
+          {/* Disclaimer */}
+          <div className="disclaimer">
+            <p><strong>Important:</strong> This is a volunteer coordination service. For immediate life-threatening emergencies, please call your local emergency number first.</p>
+          </div>
+
+          <button 
+            type="submit" 
+            className="submit-btn"
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? (
+              <>
+                <span className="spinner"></span>
+                Submitting Request...
+              </>
+            ) : (
+              "Request Emergency Assistance"
+            )}
+          </button>
+
+          {message.text && (
+            <div className={`alert-message ${message.type}-message`}>
+              {message.type === 'success' ? '✅' : '❌'} {message.text}
+            </div>
+          )}
+        </form>
+      </div>
     </div>
   );
 }

@@ -1,5 +1,5 @@
 // src/pages/HomePage.js
-import React from "react";
+import React, { useState } from "react";
 import "./HomePage.css";
 import { 
   User, HeartHandshake, Building2,
@@ -9,8 +9,11 @@ import {useNavigate} from 'react-router-dom';
 
 const HomePage = () => {
   const navigate = useNavigate();
+  const [loginOpen,setLoginOpen]=useState(false);
 
-
+  const toggleLogin=()=>{
+    setLoginOpen(!loginOpen)
+  }
   return (
   <div className="homepage">
   <div
@@ -28,7 +31,18 @@ const HomePage = () => {
         <li>Home</li>
         <li>Live Map</li>
         <li>How It Works</li>
-        <li><button className="btn-login">Login</button></li>
+        <li className="login-dropdown">
+              <button className="btn-login" onClick={toggleLogin}>
+                Login
+              </button>
+              {loginOpen && (
+                <ul className="dropdown-menu">
+                  <li onClick={() => navigate("/login/user")}>User</li>
+                  <li onClick={() => navigate("/login/volunteer")}>Volunteer</li>
+                  <li onClick={() => navigate("/login/ngo")}>NGO</li>
+                </ul>
+              )}
+            </li>
       </ul>
     </nav>
 

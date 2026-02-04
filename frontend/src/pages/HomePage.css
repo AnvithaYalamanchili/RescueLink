@@ -355,6 +355,126 @@ body {
   border-radius: 2px;
 }
 
+/* Add these styles to your HomePage.css file */
+
+/* Login Dropdown Styling */
+.login-dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.btn-login {
+  background: #3a86ff;
+  color: white;
+  border: none;
+  padding: 10px 24px;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 16px;
+}
+
+.btn-login:hover {
+  background: #2667cc;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(58, 134, 255, 0.3);
+}
+
+.dropdown-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background: white;
+  min-width: 180px;
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  padding: 8px 0;
+  margin-top: 8px;
+  z-index: 1000;
+  list-style: none;
+  animation: slideDown 0.2s ease-out;
+}
+
+.dropdown-menu::before {
+  content: '';
+  position: absolute;
+  top: -6px;
+  right: 20px;
+  width: 12px;
+  height: 12px;
+  background: white;
+  transform: rotate(45deg);
+  box-shadow: -2px -2px 5px rgba(0, 0, 0, 0.06);
+}
+
+.dropdown-menu li {
+  padding: 12px 20px;
+  cursor: pointer;
+  color: #333;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.dropdown-menu li:hover {
+  background: #f0f7ff;
+  color: #3a86ff;
+  padding-left: 24px;
+}
+
+.dropdown-menu li:active {
+  background: #e1eeff;
+}
+
+.dropdown-menu li:first-child {
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+}
+
+.dropdown-menu li:last-child {
+  border-bottom-left-radius: 8px;
+  border-bottom-right-radius: 8px;
+}
+
+/* Animation for dropdown */
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Ensure navbar is positioned correctly for dropdown */
+.navbar {
+  position: relative;
+  z-index: 100;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .btn-login {
+    padding: 8px 16px;
+    font-size: 14px;
+  }
+  
+  .dropdown-menu {
+    min-width: 160px;
+    right: -10px;
+  }
+  
+  .dropdown-menu li {
+    padding: 10px 16px;
+    font-size: 14px;
+  }
+}
+
 .steps {
   display: flex;
   justify-content: center;
