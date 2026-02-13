@@ -19,10 +19,12 @@ RescueLink is a web platform that connects people in emergencies with nearby vol
 
 ## 📦 Project Structure
 
+```text
 RescueLink/
-├── frontend/    # React app (UI & Client Logic)
-├── backend/     # Express API (Server & Database)
-└── README.md    # Project Documentation
+├── frontend/     # React app (UI & client logic)
+├── backend/      # Express API (server & database)
+└── README.md     # Project documentation
+```
 
 
 ## 🚀 Getting Started
