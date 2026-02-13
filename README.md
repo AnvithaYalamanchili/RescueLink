@@ -18,10 +18,11 @@ RescueLink is a web platform that connects people in emergencies with nearby vol
 **APIs:** REST APIs for request handling and coordination  
 
 ## 📦 Project Structure
+
 RescueLink/
-├── frontend/ # React app
-├── backend/ # Express API
-└── README.md
+├── frontend/    # React app (UI & Client Logic)
+├── backend/     # Express API (Server & Database)
+└── README.md    # Project Documentation
 
 
 ## 🚀 Getting Started
@@ -31,22 +32,22 @@ RescueLink/
 ```bash
 git clone https://github.com/AnvithaYalamanchili/RescueLink.git
 cd RescueLink
+
 Frontend Setup
 cd frontend
 npm install
 npm start
-🧠 Backend Setup
+
+Backend Setup
 cd backend
 npm install
 npm start
+```
 Make sure you have PostgreSQL installed and configured. Create a database and update your .env with credentials.
 
 ### What’s in Progress
 
 API structure and routing
-
 Database schema design
-
 Role‑based authentication
-
 Live request tracking and notifications
