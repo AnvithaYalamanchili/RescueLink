@@ -47,7 +47,7 @@ Make sure you have PostgreSQL installed and configured. Create a database and up
 
 ### What’s in Progress
 
-API structure and routing
-Database schema design
-Role‑based authentication
-Live request tracking and notifications
+- API structure and routing
+- Database schema design
+- Role‑based authentication
+- Live request tracking and notifications
