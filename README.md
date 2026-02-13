@@ -43,7 +43,7 @@ npm start
 Backend Setup
 cd backend
 npm install
-npm start
+npm server.js
 ```
 Make sure you have PostgreSQL installed and configured. Create a database and update your .env with credentials.
 
