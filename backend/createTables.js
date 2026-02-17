@@ -72,6 +72,9 @@ if (!addressZoneColumn.rows[0].exists) {
         can_call BOOLEAN DEFAULT FALSE,
         lat NUMERIC(9,6),
         lng NUMERIC(9,6),
+        current_lat NUMERIC(9,6), -- Live moving location
+        current_lng NUMERIC(9,6), -- Live moving location
+        last_ping_at TIMESTAMP,
         address TEXT,
         severity VARCHAR(20) DEFAULT 'low', -- low, medium, high, critical
         status VARCHAR(20) DEFAULT 'pending', -- pending, assigned, in_progress, completed
@@ -263,6 +266,9 @@ if (!addressZoneColumn.rows[0].exists) {
         request_id UUID REFERENCES emergency_requests(id) ON DELETE CASCADE,
         volunteer_id UUID REFERENCES volunteers(id) ON DELETE CASCADE,
         status VARCHAR(20) DEFAULT 'assigned',
+        volunteer_current_lat NUMERIC(9,6),
+        volunteer_current_lng NUMERIC(9,6),
+        v_last_ping_at TIMESTAMP,
         people_served INT DEFAULT 0,
         assigned_at TIMESTAMP DEFAULT NOW(),
         started_at TIMESTAMP,

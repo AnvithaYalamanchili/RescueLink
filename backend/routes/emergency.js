@@ -5,6 +5,256 @@ const pool = require("../db");
 // POST /api/emergency - Create new emergency request
 // POST /api/emergency - Create new emergency request
 // POST /api/emergency - Create new emergency request
+// router.post("/", async (req, res) => {
+//   let client;
+//   try {
+//     const {
+//       emergency_type,
+//       description,
+//       people_count,
+//       contact_number,
+//       can_call,
+//       address,
+//       severity
+//     } = req.body;
+
+//     console.log("📝 Emergency submission received:", {
+//       emergency_type,
+//       address,
+//       severity,
+//       people_count
+//     });
+
+//     if (!emergency_type || !description || !contact_number) {
+//       return res.status(400).json({ 
+//         success: false,
+//         message: "Emergency type, description, and contact number are required" 
+//       });
+//     }
+
+//     if (contact_number.replace(/\D/g, '').length < 10) {
+//       return res.status(400).json({ 
+//         success: false,
+//         message: "Please provide a valid phone number with at least 10 digits" 
+//       });
+//     }
+
+//     client = await pool.connect();
+//     await client.query('BEGIN');
+
+//     // Create or find guest user
+//     let guestId;
+//     const guestPhone = contact_number.replace(/\D/g, '');
+    
+//     console.log("📱 Guest phone:", guestPhone);
+    
+//     const userCheck = await client.query(
+//       "SELECT id FROM users WHERE phone = $1",
+//       [guestPhone]
+//     );
+    
+//     if (userCheck.rows.length > 0) {
+//       guestId = userCheck.rows[0].id;
+//       console.log("👤 Found existing user ID:", guestId);
+//     } else {
+//       const guestResult = await client.query(
+//         `INSERT INTO users (phone, role, name, email, created_at)
+//          VALUES ($1, 'guest', 'Guest User', $2, NOW())
+//          RETURNING id`,
+//         [guestPhone, `guest_${Date.now()}@example.com`]
+//       );
+//       guestId = guestResult.rows[0].id;
+//       console.log("👤 Created new guest user ID:", guestId);
+//     }
+
+//     // Determine severity
+//     let finalSeverity = severity || 'medium';
+//     if (!severity) {
+//       const highSeverityTypes = ['medical', 'fire', 'accident'];
+//       const mediumSeverityTypes = ['flood', 'earthquake'];
+//       if (highSeverityTypes.includes(emergency_type)) finalSeverity = 'high';
+//       else if (mediumSeverityTypes.includes(emergency_type)) finalSeverity = 'medium';
+//       else finalSeverity = 'low';
+//     }
+
+//     console.log("🔴 Final severity:", finalSeverity);
+
+//     // IMPROVED: Extract city/zone from address
+//     let requestZone = null;
+//     if (address) {
+//       // Clean and parse the address
+//       const cleanAddress = address.trim();
+      
+//       // Try to extract city name (common patterns)
+//       // Pattern 1: Look for city after street address (e.g., "4700 taft blvd Wichita falls")
+//       const cityPatterns = [
+//         /\b(Wichita\s+Falls)\b/i,  // Wichita Falls
+//         /\b(San\s+Francisco)\b/i,  // San Francisco
+//         /\b(New\s+York)\b/i,       // New York
+//         /\b(Los\s+Angeles)\b/i,    // Los Angeles
+//         /,\s*([^,]+?)(?:\s+\d{5})?$/i,  // Last part before ZIP
+//       ];
+      
+//       for (const pattern of cityPatterns) {
+//         const match = cleanAddress.match(pattern);
+//         if (match) {
+//           requestZone = match[1] || match[0];
+//           break;
+//         }
+//       }
+      
+//       // If no pattern matched, take the last word as fallback
+//       if (!requestZone) {
+//         const words = cleanAddress.split(/\s+/);
+//         if (words.length > 1) {
+//           requestZone = words[words.length - 2] + ' ' + words[words.length - 1];
+//         } else {
+//           requestZone = cleanAddress;
+//         }
+//       }
+      
+//       // Clean up the zone name
+//       requestZone = requestZone.trim();
+//       console.log("📍 Extracted zone from address:", requestZone);
+//     }
+
+//     // Insert emergency request
+//     const result = await client.query(
+//       `INSERT INTO emergency_requests (
+//         guest_id, emergency_type, description, people_count,
+//         contact_number, can_call, address, severity, status, created_at, address_zone
+//       ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, 'pending', NOW(), $9)
+//       RETURNING *`,
+//       [
+//         guestId,
+//         emergency_type,
+//         description.trim(),
+//         parseInt(people_count) || 1,
+//         guestPhone,
+//         can_call || false,
+//         address ? address.trim() : null,
+//         finalSeverity,
+//         requestZone
+//       ]
+//     );
+
+//     const newRequest = result.rows[0];
+//     console.log("✅ Emergency request created with ID:", newRequest.id);
+
+//     // Calculate volunteers needed
+//     const volunteersNeeded = Math.max(1, Math.ceil(newRequest.people_count / 5));
+//     console.log("👥 Volunteers needed:", volunteersNeeded);
+
+//     // Find available volunteers
+//     let nearbyVolunteers = [];
+    
+//     if (requestZone) {
+//       console.log("🔍 Searching for volunteers in zone:", requestZone);
+      
+//       // SIMPLIFIED: Just get all available active volunteers
+//       const volunteersResult = await client.query(
+//         `SELECT id, name, phone, email, zone, skills, available, account_status
+//          FROM volunteers
+//          WHERE account_status = 'active'
+//            AND available = TRUE
+//          ORDER BY 
+//            CASE 
+//              WHEN zone IS NULL THEN 2
+//              WHEN zone ILIKE $1 THEN 1  -- Exact match
+//              ELSE 2
+//            END,
+//            last_active DESC
+//          LIMIT $2`,
+//         [`%${requestZone}%`, volunteersNeeded * 3]
+//       );
+      
+//       nearbyVolunteers = volunteersResult.rows;
+//       console.log(`🔍 Found ${nearbyVolunteers.length} available volunteers total`);
+      
+//       if (nearbyVolunteers.length > 0) {
+//         console.log("Volunteers found:");
+//         nearbyVolunteers.forEach((v, i) => {
+//           console.log(`  ${i + 1}. ${v.name} (ID: ${v.id}, Zone: ${v.zone}, Available: ${v.available})`);
+//         });
+//       }
+//     } else {
+//       // If no zone specified, get any available volunteers
+//       console.log("🌍 No zone specified, searching all available volunteers...");
+      
+//       const allVolunteersResult = await client.query(
+//         `SELECT id, name, phone, email, zone, skills
+//          FROM volunteers
+//          WHERE account_status = 'active'
+//            AND available = TRUE
+//          ORDER BY last_active DESC
+//          LIMIT $1`,
+//         [volunteersNeeded * 3]
+//       );
+      
+//       nearbyVolunteers = allVolunteersResult.rows;
+//       console.log(`🔍 Found ${nearbyVolunteers.length} total available volunteers`);
+//     }
+
+//     // Create notifications for volunteers
+//     console.log(`📢 Creating notifications for ${nearbyVolunteers.length} volunteers...`);
+    
+//     for (const volunteer of nearbyVolunteers) {
+//       console.log(`   → Notifying volunteer ${volunteer.name} (ID: ${volunteer.id}, Zone: ${volunteer.zone})`);
+      
+//       await client.query(
+//         `INSERT INTO notifications (
+//           user_id, user_type, request_id, message, notification_type, status, created_at
+//         ) VALUES ($1, 'volunteer', $2, $3, 'alert', 'unread', NOW())`,
+//         [
+//           volunteer.id,
+//           newRequest.id,
+//           `🚨 NEW ${emergency_type.toUpperCase()} EMERGENCY in ${requestZone || 'your area'}: ${description.substring(0, 50)}${description.length > 50 ? '...' : ''} - ${people_count} people affected. Click to accept.`
+//         ]
+//       );
+//     }
+
+//     await client.query('COMMIT');
+
+//     console.log("✅ Emergency request completed successfully");
+    
+//     res.status(201).json({
+//       success: true,
+//       message: `Emergency request submitted successfully. ${nearbyVolunteers.length} volunteer(s) notified.`,
+//       data: {
+//         requestId: newRequest.id,
+//         totalNearbyVolunteers: nearbyVolunteers.length,
+//         volunteersNeeded: volunteersNeeded,
+//         zone: requestZone
+//       }
+//     });
+
+//   } catch (err) {
+//     console.error("❌ EMERGENCY REQUEST ERROR:", err);
+    
+//     if (client) {
+//       try {
+//         await client.query('ROLLBACK');
+//       } catch (rollbackErr) {
+//         console.error("Rollback error:", rollbackErr);
+//       }
+//     }
+    
+//     res.status(500).json({
+//       success: false,
+//       message: "Failed to submit emergency request. Please try again.",
+//       error: process.env.NODE_ENV === 'development' ? err.message : undefined
+//     });
+//   } finally {
+//     if (client) {
+//       try {
+//         client.release();
+//       } catch (releaseErr) {
+//         console.error("Client release error:", releaseErr);
+//       }
+//     }
+//   }
+// });
+
 router.post("/", async (req, res) => {
   let client;
   try {
@@ -15,14 +265,18 @@ router.post("/", async (req, res) => {
       contact_number,
       can_call,
       address,
-      severity
+      severity,
+      latitude,
+      longitude
     } = req.body;
 
     console.log("📝 Emergency submission received:", {
       emergency_type,
       address,
       severity,
-      people_count
+      people_count,
+      latitude,
+      longitude
     });
 
     if (!emergency_type || !description || !contact_number) {
@@ -79,50 +333,68 @@ router.post("/", async (req, res) => {
 
     console.log("🔴 Final severity:", finalSeverity);
 
-    // IMPROVED: Extract city/zone from address
+    // Extract city/zone from address
     let requestZone = null;
+    let cityName = null;
+    
     if (address) {
       // Clean and parse the address
       const cleanAddress = address.trim();
       
-      // Try to extract city name (common patterns)
-      // Pattern 1: Look for city after street address (e.g., "4700 taft blvd Wichita falls")
+      // Common city patterns
       const cityPatterns = [
-        /\b(Wichita\s+Falls)\b/i,  // Wichita Falls
-        /\b(San\s+Francisco)\b/i,  // San Francisco
-        /\b(New\s+York)\b/i,       // New York
-        /\b(Los\s+Angeles)\b/i,    // Los Angeles
-        /,\s*([^,]+?)(?:\s+\d{5})?$/i,  // Last part before ZIP
+        /Wichita\s+Falls/i,  // Wichita Falls
+        /San\s+Francisco/i,   // San Francisco
+        /New\s+York/i,        // New York
+        /Los\s+Angeles/i,     // Los Angeles
+        /Chicago/i,           // Chicago
+        /Houston/i,           // Houston
+        /Phoenix/i,           // Phoenix
+        /Philadelphia/i,      // Philadelphia
+        /San\s+Antonio/i,     // San Antonio
+        /San\s+Diego/i,       // San Diego
+        /Dallas/i,            // Dallas
+        /San\s+Jose/i         // San Jose
       ];
       
       for (const pattern of cityPatterns) {
         const match = cleanAddress.match(pattern);
         if (match) {
-          requestZone = match[1] || match[0];
+          requestZone = match[0];
+          cityName = match[0].toLowerCase().replace(/\s+/g, '_');
           break;
         }
       }
       
-      // If no pattern matched, take the last word as fallback
+      // If no pattern matched, extract using comma separation
       if (!requestZone) {
-        const words = cleanAddress.split(/\s+/);
-        if (words.length > 1) {
-          requestZone = words[words.length - 2] + ' ' + words[words.length - 1];
+        const parts = cleanAddress.split(',').map(p => p.trim());
+        if (parts.length > 1) {
+          // Take the city part (usually second last before state)
+          requestZone = parts[parts.length - 2] || parts[parts.length - 1];
+          cityName = requestZone.toLowerCase().replace(/\s+/g, '_');
         } else {
-          requestZone = cleanAddress;
+          // Take the last word as fallback
+          const words = cleanAddress.split(/\s+/);
+          if (words.length > 1) {
+            requestZone = words[words.length - 2] + ' ' + words[words.length - 1];
+          } else {
+            requestZone = cleanAddress;
+          }
+          cityName = requestZone.toLowerCase().replace(/\s+/g, '_');
         }
       }
       
-      // Clean up the zone name
-      requestZone = requestZone.trim();
       console.log("📍 Extracted zone from address:", requestZone);
+      console.log("📍 City name for matching:", cityName);
     }
 
-    // Insert emergency request
+    // Insert emergency request with coordinates
     const result = await client.query(
       `INSERT INTO emergency_requests (
         guest_id, emergency_type, description, people_count,
-        contact_number, can_call, address, severity, status, created_at, address_zone
+        contact_number, can_call, address, severity, status, 
+        created_at, address_zone
       ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, 'pending', NOW(), $9)
       RETURNING *`,
       [
@@ -145,44 +417,66 @@ router.post("/", async (req, res) => {
     const volunteersNeeded = Math.max(1, Math.ceil(newRequest.people_count / 5));
     console.log("👥 Volunteers needed:", volunteersNeeded);
 
-    // Find available volunteers
+    // Find nearby volunteers - ONLY THOSE IN THE SAME OR NEARBY ZONES
     let nearbyVolunteers = [];
     
-    if (requestZone) {
-      console.log("🔍 Searching for volunteers in zone:", requestZone);
+    if (cityName) {
+      console.log("🔍 Searching for volunteers in zone/city:", cityName);
       
-      // SIMPLIFIED: Just get all available active volunteers
+      // Find volunteers whose zone matches the city
+      // We'll look for volunteers whose zone contains the city name or vice versa
       const volunteersResult = await client.query(
-        `SELECT id, name, phone, email, zone, skills, available, account_status
+        `SELECT 
+          id, name, phone, email, zone, skills, available, account_status,
+          CASE 
+            WHEN LOWER(zone) = $1 THEN 1  -- Exact match
+            WHEN LOWER(zone) LIKE $2 THEN 2  -- Contains city name
+            WHEN $1 LIKE '%' || LOWER(zone) || '%' THEN 3  -- City contains zone
+            ELSE 4
+          END as match_priority
          FROM volunteers
          WHERE account_status = 'active'
            AND available = TRUE
-         ORDER BY 
-           CASE 
-             WHEN zone IS NULL THEN 2
-             WHEN zone ILIKE $1 THEN 1  -- Exact match
-             ELSE 2
-           END,
-           last_active DESC
-         LIMIT $2`,
-        [`%${requestZone}%`, volunteersNeeded * 3]
+           AND (
+             LOWER(zone) = $1 OR
+             LOWER(zone) LIKE $2 OR
+             $1 LIKE '%' || LOWER(zone) || '%'
+           )
+         ORDER BY match_priority, last_active DESC
+         LIMIT $3`,
+        [
+          cityName,                    // Exact city name match
+          `%${cityName}%`,             // Partial match
+          volunteersNeeded * 5         // Get more volunteers than needed
+        ]
       );
       
       nearbyVolunteers = volunteersResult.rows;
-      console.log(`🔍 Found ${nearbyVolunteers.length} available volunteers total`);
+      console.log(`🔍 Found ${nearbyVolunteers.length} volunteers in zone '${cityName}'`);
       
-      if (nearbyVolunteers.length > 0) {
-        console.log("Volunteers found:");
-        nearbyVolunteers.forEach((v, i) => {
-          console.log(`  ${i + 1}. ${v.name} (ID: ${v.id}, Zone: ${v.zone}, Available: ${v.available})`);
-        });
+      if (nearbyVolunteers.length === 0) {
+        console.log("⚠️ No volunteers found in exact zone, expanding search...");
+        
+        // If no exact matches, expand to broader area
+        const expandedResult = await client.query(
+          `SELECT id, name, phone, email, zone, skills, available, account_status
+           FROM volunteers
+           WHERE account_status = 'active'
+             AND available = TRUE
+           ORDER BY last_active DESC
+           LIMIT $1`,
+          [volunteersNeeded * 3]
+        );
+        
+        nearbyVolunteers = expandedResult.rows;
+        console.log(`🔍 Expanded search found ${nearbyVolunteers.length} volunteers total`);
       }
     } else {
-      // If no zone specified, get any available volunteers
+      // If no city/zone could be determined, get all available volunteers
       console.log("🌍 No zone specified, searching all available volunteers...");
       
       const allVolunteersResult = await client.query(
-        `SELECT id, name, phone, email, zone, skills
+        `SELECT id, name, phone, email, zone, skills, available, account_status
          FROM volunteers
          WHERE account_status = 'active'
            AND available = TRUE
@@ -196,9 +490,12 @@ router.post("/", async (req, res) => {
     }
 
     // Create notifications for volunteers
-    console.log(`📢 Creating notifications for ${nearbyVolunteers.length} volunteers...`);
+    console.log(`📢 Creating notifications for ${Math.min(nearbyVolunteers.length, volunteersNeeded * 2)} volunteers...`);
     
-    for (const volunteer of nearbyVolunteers) {
+    // Only notify up to 2x the needed volunteers (to avoid spamming everyone)
+    const volunteersToNotify = nearbyVolunteers.slice(0, volunteersNeeded * 2);
+    
+    for (const volunteer of volunteersToNotify) {
       console.log(`   → Notifying volunteer ${volunteer.name} (ID: ${volunteer.id}, Zone: ${volunteer.zone})`);
       
       await client.query(
@@ -219,12 +516,13 @@ router.post("/", async (req, res) => {
     
     res.status(201).json({
       success: true,
-      message: `Emergency request submitted successfully. ${nearbyVolunteers.length} volunteer(s) notified.`,
+      message: `Emergency request submitted successfully. ${volunteersToNotify.length} volunteer(s) notified.`,
       data: {
         requestId: newRequest.id,
-        totalNearbyVolunteers: nearbyVolunteers.length,
+        totalNearbyVolunteers: volunteersToNotify.length,
         volunteersNeeded: volunteersNeeded,
-        zone: requestZone
+        zone: requestZone,
+        volunteersInZone: nearbyVolunteers.length
       }
     });
 
@@ -254,6 +552,7 @@ router.post("/", async (req, res) => {
     }
   }
 });
+
 // GET /api/emergency/:id - Get emergency request status
 router.get("/:id", async (req, res) => {
   let client;

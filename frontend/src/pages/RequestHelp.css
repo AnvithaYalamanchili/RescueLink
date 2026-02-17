@@ -301,6 +301,36 @@ input:focus {
   animation: spin 1s linear infinite;
 }
 
+.location-sharing-box {
+  background: #f0f7ff;
+  padding: 15px;
+  border-radius: 8px;
+  border: 1px dashed #007bff;
+  margin-bottom: 20px;
+}
+
+.live-label {
+  font-weight: 600;
+  color: #0056b3;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.coords-display {
+  font-size: 0.85rem;
+  color: #666;
+  margin-top: 5px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.location-status-text.success {
+  color: #28a745;
+  font-weight: bold;
+}
+
 @keyframes spin {
   to { transform: rotate(360deg); }
 }

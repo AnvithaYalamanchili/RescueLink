@@ -494,12 +494,16 @@ router.get("/available-requests", async (req, res) => {
         GROUP BY request_id
       ) ra ON er.id = ra.request_id
       WHERE er.status IN ('pending', 'partially_assigned')
-        AND (COALESCE(ra.assigned_count, 0) < CEIL(er.people_count / 5.0))
-        AND er.id NOT IN (
-          SELECT request_id 
-          FROM request_assignments 
-          WHERE volunteer_id = $2
-        )
+  AND (COALESCE(ra.assigned_count, 0) < CEIL(er.people_count / 5.0))
+  AND (
+    er.address_zone ILIKE $1 OR 
+    $1 ILIKE '%' || er.address_zone || '%'
+  ) -- This line ensures only matching zones are returned
+  AND er.id NOT IN (
+    SELECT request_id 
+    FROM request_assignments 
+    WHERE volunteer_id = $2
+  )
     `;
 
     const params = [volunteer.zone || '', volunteer_id];
@@ -923,7 +927,7 @@ router.get("/nearby", async (req, res) => {
              availability, available, last_active,
              total_assignments, completed_assignments, rating
       FROM volunteers 
-      WHERE account_status = 'active' AND available = TRUE
+      WHERE account_status = 'active' AND available = TRUE AND(zone ILIKE $1 OR zone IS NULL)
     `;
     const params = [];
     let paramCount = 1;

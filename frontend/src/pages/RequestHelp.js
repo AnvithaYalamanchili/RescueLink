@@ -1,6 +1,7 @@
 import { AlertTriangle } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { MapPin, Navigation } from "lucide-react"; // Added for UI
 import "./RequestHelp.css";
 
 export default function RequestHelp() {
@@ -11,11 +12,15 @@ export default function RequestHelp() {
     contact_number: "",
     can_call: false,
     address: "",
-    severity: "medium" // Added severity field
+    severity: "medium" ,// Added severity field
+    lat: null,
+    lng: null,
+    share_live_location: false
   });
   
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [message, setMessage] = useState({ text: "", type: "" });
+  const [locationStatus, setLocationStatus] = useState("");
 
   const navigate = useNavigate();
 
@@ -44,6 +49,68 @@ export default function RequestHelp() {
     if (highSeverity.includes(type)) return "high";
     if (mediumSeverity.includes(type)) return "medium";
     return "low";
+  };
+
+  // Function to get GPS coordinates
+  const getLiveLocation = () => {
+  if (!navigator.geolocation) {
+    setLocationStatus("Geolocation is not supported by your browser");
+    return;
+  }
+
+  setLocationStatus("Acquiring GPS...");
+  
+  navigator.geolocation.getCurrentPosition(async (position) => {
+    const { latitude, longitude } = position.coords;
+    
+    // 1. Set the coordinates immediately
+    setForm(prev => ({
+      ...prev,
+      lat: latitude,
+      lng: longitude,
+      share_live_location: true
+    }));
+
+    // 2. Fetch Address Name using OpenStreetMap (Free)
+    try {
+      setLocationStatus("Finding address...");
+      
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${latitude}&lon=${longitude}`,
+        {
+          headers: {
+            "User-Agent": "EmergencyHelpApp/1.0" // Required by Nominatim policy
+          }
+        }
+      );
+      
+      const data = await response.json();
+      
+      if (data && data.display_name) {
+        setForm(prev => ({ 
+          ...prev, 
+          address: data.display_name 
+        }));
+        setLocationStatus("Location and address captured ✓");
+      }
+    } catch (error) {
+      console.error("Reverse Geocoding error:", error);
+      setLocationStatus("Location captured (GPS), but address lookup failed.");
+    }
+  }, 
+  (error) => {
+    setLocationStatus("Location access denied. Please enable GPS.");
+    setForm(prev => ({ ...prev, share_live_location: false }));
+  }, 
+  { enableHighAccuracy: true, timeout: 10000 });
+};
+  const handleLocationToggle = (e) => {
+    if (e.target.checked) {
+      getLiveLocation();
+    } else {
+      setForm(prev => ({ ...prev, lat: null, lng: null, share_live_location: false }));
+      setLocationStatus("");
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -310,6 +377,36 @@ export default function RequestHelp() {
               ))}
             </div>
           </div>
+
+          {/* Live Location Section */}
+<div className="form-group location-sharing-box">
+  <div className="checkbox-container live-location-toggle">
+    <input 
+      type="checkbox" 
+      name="share_live_location" 
+      id="share-live-location" 
+      checked={form.share_live_location}
+      onChange={handleLocationToggle} 
+    />
+    <label htmlFor="share-live-location" className="live-label">
+      <Navigation size={18} className="live-icon" />
+      Share my precise live location with volunteers
+    </label>
+  </div>
+  
+  {locationStatus && (
+    <p className={`location-status-text ${form.lat ? 'success' : 'pending'}`}>
+      {locationStatus}
+    </p>
+  )}
+  
+  {form.lat && (
+    <div className="coords-display">
+      <MapPin size={14} /> 
+      <span>{form.lat.toFixed(5)}, {form.lng.toFixed(5)} (Pinpoint Accuracy)</span>
+    </div>
+  )}
+</div>
 
           {/* Disclaimer */}
           <div className="disclaimer">
