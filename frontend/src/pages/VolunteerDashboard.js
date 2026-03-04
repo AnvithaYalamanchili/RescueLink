@@ -26,7 +26,7 @@ const VolunteerDashboard = () => {
 
   // Helper function to make API calls
   const apiCall = async (endpoint, method = 'GET', body = null) => {
-    const token = localStorage.getItem('volunteerToken');
+    const token = localStorage.getItem('access_token');
     
     if (!token && endpoint !== '/volunteer/login') {
       throw new Error('No authentication token');
@@ -54,7 +54,7 @@ const VolunteerDashboard = () => {
       const response = await fetch(`${API_BASE_URL}${endpoint}`, options);
       
       if (response.status === 401) {
-        localStorage.removeItem('volunteerToken');
+        localStorage.removeItem('access_token');
         navigate('/login/volunteer');
         throw new Error('Session expired');
       }
@@ -72,6 +72,7 @@ const VolunteerDashboard = () => {
       throw error;
     }
   };
+  
 
   // Fetch all volunteer data
   const fetchVolunteerData = useCallback(async () => {
@@ -81,7 +82,7 @@ const VolunteerDashboard = () => {
       setLoadingStep('Loading profile...');
 
       // Get token from localStorage
-      const token = localStorage.getItem('volunteerToken');
+      const token = localStorage.getItem('access_token');
       
       if (!token) {
         console.log("❌ No token found, redirecting to login");
@@ -145,7 +146,7 @@ const VolunteerDashboard = () => {
       setError(error.message);
       
       if (error.message.includes('Session expired') || error.message.includes('No authentication')) {
-        localStorage.removeItem('volunteerToken');
+        localStorage.removeItem('access_token');
         navigate('/login/volunteer');
       }
       
@@ -169,49 +170,75 @@ const VolunteerDashboard = () => {
   }, [fetchVolunteerData]);
 
   // Handle accepting a request
-  const handleAcceptAssignment = async (requestId) => {
-    try {
-      setLoadingStep('Accepting assignment...');
-      
-      const result = await apiCall('/volunteer/accept-request', 'POST', {
-        request_id: requestId
-      });
+  // VolunteerDashboard.js
+const handleAcceptAssignment = async (requestId) => {
+  try {
+    setLoadingStep('Accepting assignment...');
+    
+    // 1. Corrected path to match backend: '/volunteer/accept'
+    // 2. Added volunteer_id which is required by the backend
+    const result = await apiCall('/volunteer/accept', 'POST', {
+      volunteer_id: volunteerData?.id, 
+      request_id: requestId
+    });
 
-      if (result.success) {
-        alert('Request accepted successfully!');
-        // Refresh data
-        await fetchVolunteerData();
-      } else {
-        alert(result.message || 'Failed to accept request.');
-      }
-    } catch (error) {
-      console.error('❌ Error accepting assignment:', error);
-      alert(error.message || 'Failed to accept assignment. Please try again.');
-    } finally {
-      setLoadingStep('');
+    if (result.success) {
+      alert('Request accepted successfully!');
+      await fetchVolunteerData();
+    } else {
+      alert(result.message || 'Failed to accept request.');
     }
-  };
+  } catch (error) {
+    console.error('❌ Error accepting assignment:', error);
+    alert(error.message || 'Failed to accept assignment. Please try again.');
+  } finally {
+    setLoadingStep('');
+  }
+};
 
   // Handle completing an assignment
-  const handleCompleteAssignment = async (assignmentId) => {
-    try {
-      setLoadingStep('Completing assignment...');
-      
-      const result = await apiCall(`/assignments/${assignmentId}/complete`, 'POST');
-      
-      if (result.success) {
-        alert('Assignment marked as completed!');
-        await fetchVolunteerData();
-      } else {
-        alert(result.message || 'Failed to complete assignment.');
-      }
-    } catch (error) {
-      console.error('❌ Error completing assignment:', error);
-      alert(error.message || 'Failed to complete assignment. Please try again.');
-    } finally {
-      setLoadingStep('');
+ const handleCompleteAssignment = async (assignmentId) => {
+  if (!window.confirm('Are you sure you want to mark this assignment as complete?')) {
+    return;
+  }
+
+  try {
+    setLoadingStep('Completing assignment...');
+
+    const token = localStorage.getItem("access_token");
+
+    if (!token) {
+      alert("You are not logged in. Please login again.");
+      return;
     }
-  };
+    console.log("JWT token:", token);
+    const response = await fetch(
+      `http://localhost:5000/api/volunteer/assignments/${assignmentId}/complete`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        }
+      }
+    );
+
+    const result = await response.json();
+
+    if (result.success) {
+      alert('✅ Assignment marked as completed!');
+      await fetchVolunteerData();
+    } else {
+      alert('❌ ' + (result.message || 'Failed to complete assignment.'));
+    }
+
+  } catch (error) {
+    console.error(error);
+    alert('Failed to complete assignment: ' + error.message);
+  } finally {
+    setLoadingStep('');
+  }
+};
 
   // Toggle availability
   const handleToggleAvailability = async () => {
@@ -278,7 +305,7 @@ const VolunteerDashboard = () => {
 
   // Handle logout
   const handleLogout = () => {
-    localStorage.removeItem('volunteerToken');
+    localStorage.removeItem('access_token');
     navigate('/login/volunteer');
   };
 
@@ -433,7 +460,7 @@ const VolunteerDashboard = () => {
               View All
             </button>
           </div>
-          {assignments.filter(a => a.status === 'in_progress').map(assignment => (
+          {assignments.filter(a => a.status === 'in_progress'|| a.status === 'assigned').map(assignment => (
             <div key={assignment.id} className="assignment-item active">
               <div className="assignment-info">
                 <div className="assignment-type">
@@ -993,7 +1020,7 @@ const VolunteerDashboard = () => {
                 console.log("Notifications:", notifications);
                 console.log("Assignments:", assignments);
                 console.log("Available Requests:", availableRequests);
-                console.log("Token:", localStorage.getItem('volunteerToken'));
+                console.log("Token:", localStorage.getItem('access_token'));
                 
                 // Refresh data
                 fetchVolunteerData();

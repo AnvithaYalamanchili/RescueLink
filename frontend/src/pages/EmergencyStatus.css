@@ -312,6 +312,126 @@
   font-size: 16px;
 }
 
+/* Detail Section Container */
+.detail-section {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  margin-bottom: 24px;
+}
+
+.detail-section h3 {
+  margin: 0 0 16px 0;
+  color: #1a1a1a;
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid #f0f0f0;
+}
+
+/* Volunteer List Container */
+.volunteer-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Individual Volunteer Card */
+.volunteer-card {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  background-color: #f8f9fa;
+  border-radius: 10px;
+  border: 1px solid #e9ecef;
+  transition: all 0.2s ease;
+}
+
+.volunteer-card:hover {
+  background-color: #ffffff;
+  border-color: #4CAF50;
+  box-shadow: 0 4px 12px rgba(76, 175, 80, 0.15);
+  transform: translateY(-2px);
+}
+
+/* Volunteer Name */
+.volunteer-name {
+  flex: 1;
+  margin: 0 12px;
+  font-size: 15px;
+  font-weight: 500;
+  color: #2c3e50;
+}
+
+/* Icons Styling */
+.volunteer-card svg {
+  flex-shrink: 0;
+}
+
+.volunteer-card svg:first-child {
+  color: #6c757d;
+}
+
+.volunteer-card svg:last-child {
+  opacity: 0.8;
+}
+
+/* No Volunteer State */
+.no-volunteer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 32px 20px;
+  background-color: #f8f9fa;
+  border-radius: 10px;
+  border: 2px dashed #dee2e6;
+  color: #6c757d;
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.no-volunteer svg {
+  color: #adb5bd;
+}
+
+/* Optional: Animation for hover states */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.volunteer-card {
+  animation: fadeIn 0.3s ease;
+}
+
+/* Optional: Responsive Design */
+@media (max-width: 768px) {
+  .detail-section {
+    padding: 16px;
+  }
+  
+  .volunteer-card {
+    padding: 10px 14px;
+  }
+  
+  .volunteer-name {
+    font-size: 14px;
+  }
+  
+  .no-volunteer {
+    padding: 24px 16px;
+  }
+}
+
 /* Error State */
 .status-error {
   min-height: 100vh;

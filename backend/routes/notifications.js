@@ -2,13 +2,11 @@ const express = require("express");
 const router = express.Router();
 const pool = require("../db");
 
-// GET /api/notifications/volunteer/:volunteerId - Get volunteer notifications
 router.get("/volunteer/:volunteerId", async (req, res) => {
   let client;
   try {
     const { volunteerId } = req.params;
     
-    // Get token from header for verification
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1];
     
@@ -20,9 +18,6 @@ router.get("/volunteer/:volunteerId", async (req, res) => {
     }
 
     client = await pool.connect();
-    
-    // Verify the volunteer ID matches the token
-    // (In production, you should verify JWT and check if it matches volunteerId)
     
     const result = await client.query(
       `SELECT n.*, 
@@ -58,7 +53,6 @@ router.get("/volunteer/:volunteerId", async (req, res) => {
   }
 });
 
-// PUT /api/notifications/:id/read - Mark notification as read
 router.put("/:id/read", async (req, res) => {
   let client;
   try {

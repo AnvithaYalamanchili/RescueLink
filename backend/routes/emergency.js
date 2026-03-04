@@ -611,30 +611,42 @@ router.get("/status/:id", async (req, res) => {
     
     const result = await client.query(
       `SELECT 
-        id,
-        emergency_type,
-        description,
-        people_count,
-        contact_number,
-        address,
-        severity,
-        status,
-        created_at,
-        (
-          SELECT COUNT(*) 
-          FROM request_assignments 
-          WHERE request_id = emergency_requests.id 
-          AND status IN ('assigned', 'in_progress')
-        ) as volunteers_assigned,
-        (
-          SELECT COUNT(*) 
-          FROM request_assignments 
-          WHERE request_id = emergency_requests.id 
-          AND status = 'completed'
-        ) as volunteers_completed
-       FROM emergency_requests 
-       WHERE id = $1`,
-      [id]
+    er.id,
+    er.emergency_type,
+    er.description,
+    er.people_count,
+    er.contact_number,
+    er.address,
+    er.severity,
+    er.status,
+    er.created_at,
+
+    -- count assigned volunteers
+    (
+      SELECT COUNT(*) 
+      FROM request_assignments ra
+      WHERE ra.request_id = er.id
+      AND ra.status IN ('assigned','in_progress')
+    ) as volunteers_assigned,
+
+    -- assigned volunteer details
+    (
+      SELECT json_agg(
+        json_build_object(
+          'id', v.id,
+          'name', v.name
+        )
+      )
+      FROM request_assignments ra
+      JOIN volunteers v ON v.id = ra.volunteer_id
+      WHERE ra.request_id = er.id
+      AND ra.status IN ('assigned','in_progress')
+    ) as assigned_volunteers
+
+  FROM emergency_requests er
+  WHERE er.id = $1
+  `,
+  [id]
     );
 
     if (result.rows.length === 0) {

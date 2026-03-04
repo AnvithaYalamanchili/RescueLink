@@ -136,6 +136,31 @@ const EmergencyStatus = () => {
         </div>
 
         <div className="status-details">
+        <div className="detail-section">
+  <h3>Assigned Volunteers</h3>
+
+  {requestData.assigned_volunteers &&
+   requestData.assigned_volunteers.length > 0 ? (
+
+    <div className="volunteer-list">
+      {requestData.assigned_volunteers.map((volunteer) => (
+        <div key={volunteer.id} className="volunteer-card">
+          <User size={18} />
+          <span className="volunteer-name">
+            {volunteer.name}
+          </span>
+          <CheckCircle size={16} color="#4CAF50" />
+        </div>
+      ))}
+    </div>
+
+  ) : (
+    <div className="no-volunteer">
+      <Clock size={18} />
+      <span>No volunteer assigned yet</span>
+    </div>
+  )}
+</div>
           <div className="detail-section">
             <h3>Emergency Details</h3>
             <div className="detail-grid">

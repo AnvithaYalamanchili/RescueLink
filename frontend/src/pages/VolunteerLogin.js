@@ -77,8 +77,7 @@ const VolunteerLogin = () => {
       if (response.ok && data.success) {
         // Store the token in localStorage
         if (data.data.token) {
-          localStorage.setItem('volunteerToken', data.data.token);
-          
+localStorage.setItem('access_token', data.data.token);          
           // Store volunteer data if available
           if (data.data.volunteer) {
             localStorage.setItem('volunteerData', JSON.stringify(data.data.volunteer));
@@ -86,7 +85,7 @@ const VolunteerLogin = () => {
         }
         
         // Show success message
-        alert('Login successful! Redirecting to dashboard...');
+        console.log('Login successful! Redirecting to dashboard...');
         
         // Navigate to volunteer dashboard
         navigate('/volunteer/dashboard');

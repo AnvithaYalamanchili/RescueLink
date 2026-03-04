@@ -51,13 +51,13 @@ const addressZoneColumn = await pool.query(`
   );
 `);
 
-if (!addressZoneColumn.rows[0].exists) {
-  await pool.query(`
-    ALTER TABLE emergency_requests 
-    ADD COLUMN address_zone VARCHAR(100);
-  `);
-  console.log("Added column 'address_zone' to emergency_requests");
-}
+// if (!addressZoneColumn.rows[0].exists) {
+//   await pool.query(`
+//     ALTER TABLE emergency_requests 
+//     ADD COLUMN address_zone VARCHAR(100);
+//   `);
+//   console.log("Added column 'address_zone' to emergency_requests");
+// }
 
 
     // Emergency Requests
@@ -82,6 +82,14 @@ if (!addressZoneColumn.rows[0].exists) {
         created_at TIMESTAMP DEFAULT NOW()
       );
     `);
+
+    if (!addressZoneColumn.rows[0].exists) {
+  await pool.query(`
+    ALTER TABLE emergency_requests 
+    ADD COLUMN address_zone VARCHAR(100);
+  `);
+  console.log("Added column 'address_zone' to emergency_requests");
+}
 
     // Volunteers - First check if table exists, then alter if needed
     console.log("Creating/Updating volunteers table...");
