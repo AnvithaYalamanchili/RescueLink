@@ -17,6 +17,9 @@ RescueLink is a web platform that connects people in emergencies with nearby vol
 **Database:** PostgreSQL  
 **APIs:** REST APIs for request handling and coordination  
 
+## Domain Model
+![Domain Model](RescueLink_Domain_Model.drawio.png)
+
 ## 📦 Project Structure
 
 ```text
