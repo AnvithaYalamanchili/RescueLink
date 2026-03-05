@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   User, MapPin, Bell, CheckCircle, Clock, AlertTriangle,
@@ -7,6 +7,7 @@ import {
   Settings, HelpCircle, BarChart, Mail, Phone
 } from 'lucide-react';
 import './VolunteerDashboard.css';
+import {io} from "socket.io-client"
 
 const VolunteerDashboard = () => {
   const navigate = useNavigate();
@@ -20,6 +21,25 @@ const VolunteerDashboard = () => {
   const [availableRequests, setAvailableRequests] = useState([]);
   const [loadingStep, setLoadingStep] = useState('');
   const [unreadNotifications, setUnreadNotifications] = useState(0);
+
+  const socketRef=useRef(null);
+  const watchIdRef=useRef(null);
+
+  useEffect(() => {
+  socketRef.current = io("http://localhost:5000", {
+    transports: ["websocket"]
+  });
+
+  socketRef.current.on("connect", () => {
+    console.log("✅ Connected to socket:", socketRef.current.id);
+  });
+
+  return () => {
+    if (socketRef.current) {
+      socketRef.current.disconnect();
+    }
+  };
+}, []);
 
   // API base URL
   const API_BASE_URL = 'http://localhost:5000/api';
@@ -195,6 +215,49 @@ const handleAcceptAssignment = async (requestId) => {
     setLoadingStep('');
   }
 };
+useEffect(() => {
+  if (!assignments || assignments.length === 0) return;
+
+  const activeAssignment = assignments.find(
+    a => a.status === "assigned" || a.status === "in_progress"
+  );
+
+  if (!activeAssignment) {
+    // Stop GPS if no active assignment
+    if (watchIdRef.current) {
+      navigator.geolocation.clearWatch(watchIdRef.current);
+      watchIdRef.current = null;
+    }
+    return;
+  }
+
+  console.log("🚑 Starting live tracking for emergency:", activeAssignment.id);
+
+  // Start GPS tracking
+  watchIdRef.current = navigator.geolocation.watchPosition(
+    (position) => {
+      socketRef.current.emit("volunteer_location_update", {
+        emergencyId: activeAssignment.emergency_id || activeAssignment.id,
+        volunteerId: volunteerData?.id,
+        latitude: position.coords.latitude,
+        longitude: position.coords.longitude
+      });
+    },
+    (error) => console.error("GPS error:", error),
+    {
+      enableHighAccuracy: true,
+      maximumAge: 0,
+      timeout: 5000
+    }
+  );
+
+  return () => {
+    if (watchIdRef.current) {
+      navigator.geolocation.clearWatch(watchIdRef.current);
+    }
+  };
+
+}, [assignments, volunteerData]);
 
   // Handle completing an assignment
  const handleCompleteAssignment = async (assignmentId) => {

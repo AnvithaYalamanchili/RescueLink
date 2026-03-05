@@ -7,6 +7,8 @@ if (!process.env.JWT_SECRET) {
 
 const express=require("express");
 const cors=require("cors");
+const http=require("http");
+const {Server}=require("socket.io")
 
 const app=express();
 const PORT=process.env.PORT||5000;
@@ -26,6 +28,37 @@ app.get("/",(req,res)=>{
 res.send("Rescuelink api is running");
 })
 
-app.listen(PORT,()=>{
+const server=http.createServer(app);
+const io=new Server(server,{
+  cors:{
+    origin:"http://localhost:3000",
+    methods:["GET","POST"],
+    credentials:true
+  }
+})
+
+io.on("connection",(socket)=>{
+  console.log("Client connected :",socket.id);
+
+  socket.on("join_emergency",(emergencyId)=>{
+    socket.join(`emergency_${emergencyId}`);
+    console.log(`User joined room: emergency_${emergencyId}`);
+  })
+
+  socket.on("volunteer_location_update",(data)=>{
+    const {emergencyId,volunteerId,latitude,longitude}=data;
+    io.to(`emergency_${emergencyId}`).emit("location_update",{
+      volunteerId,
+      latitude,
+      longitude
+    })
+  });
+  socket.on("disconnect",()=>{
+    console.log("Client disconnected :",socket.id)
+  })
+
+})
+
+server.listen(PORT,()=>{
   console.log(`Server is running on port ${PORT}`); 
 })

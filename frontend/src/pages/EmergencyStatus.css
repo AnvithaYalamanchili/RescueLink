@@ -431,6 +431,66 @@
     padding: 24px 16px;
   }
 }
+/* Floating Button */
+.floating-map-btn {
+  position: fixed;
+  bottom: 25px;
+  right: 25px;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: #2196F3;
+  color: white;
+  font-size: 24px;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  z-index: 1000;
+  transition: 0.3s;
+}
+
+.floating-map-btn:hover {
+  background: #1976D2;
+  transform: scale(1.1);
+}
+
+/* Map Modal Overlay */
+.map-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+}
+
+/* Map Container */
+.map-container-wrapper {
+  position: relative;
+  width: 90%;
+  height: 80%;
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+/* Close Button */
+.close-map-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 2500;
+  background: #f44336;
+  color: white;
+  border: none;
+  padding: 6px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+}
 
 /* Error State */
 .status-error {

@@ -266,8 +266,8 @@ router.post("/", async (req, res) => {
       can_call,
       address,
       severity,
-      latitude,
-      longitude
+      lat,
+      lng
     } = req.body;
 
     console.log("📝 Emergency submission received:", {
@@ -275,8 +275,8 @@ router.post("/", async (req, res) => {
       address,
       severity,
       people_count,
-      latitude,
-      longitude
+      lat,
+      lng
     });
 
     if (!emergency_type || !description || !contact_number) {
@@ -389,13 +389,15 @@ router.post("/", async (req, res) => {
       console.log("📍 City name for matching:", cityName);
     }
 
+    console.log()
+
     // Insert emergency request with coordinates
     const result = await client.query(
       `INSERT INTO emergency_requests (
         guest_id, emergency_type, description, people_count,
-        contact_number, can_call, address, severity, status, 
+        contact_number,lat,lng, can_call, address, severity, status, 
         created_at, address_zone
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, 'pending', NOW(), $9)
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8,$9,$10, 'pending', NOW(), $11)
       RETURNING *`,
       [
         guestId,
@@ -403,6 +405,8 @@ router.post("/", async (req, res) => {
         description.trim(),
         parseInt(people_count) || 1,
         guestPhone,
+        lat,
+        lng,
         can_call || false,
         address ? address.trim() : null,
         finalSeverity,
@@ -620,6 +624,8 @@ router.get("/status/:id", async (req, res) => {
     er.severity,
     er.status,
     er.created_at,
+    er.lat,
+    er.lng,
 
     -- count assigned volunteers
     (
@@ -655,6 +661,12 @@ router.get("/status/:id", async (req, res) => {
         message: "Emergency request not found" 
       });
     }
+    console.log("---------------------------------------------------------------------------------------------------------------------------------------------------------")
+     console.log("Returning request with coordinates:", {
+      id: result.rows[0].id,
+      lat: result.rows[0].lat,
+      lng: result.rows[0].lng
+    });
 
     res.json({
       success: true,

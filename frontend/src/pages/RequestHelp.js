@@ -13,8 +13,8 @@ export default function RequestHelp() {
     can_call: false,
     address: "",
     severity: "medium" ,// Added severity field
-    lat: null,
-    lng: null,
+    lat: "",
+    lng: "",
     share_live_location: false
   });
   
@@ -63,7 +63,7 @@ export default function RequestHelp() {
   navigator.geolocation.getCurrentPosition(async (position) => {
     const { latitude, longitude } = position.coords;
     
-    // 1. Set the coordinates immediately
+    // Update state with coordinates
     setForm(prev => ({
       ...prev,
       lat: latitude,
@@ -71,7 +71,10 @@ export default function RequestHelp() {
       share_live_location: true
     }));
 
-    // 2. Fetch Address Name using OpenStreetMap (Free)
+    // Log after state update (note: this will show the previous state)
+    console.log("Location captured:", latitude, longitude);
+
+    // Fetch Address Name using OpenStreetMap (Free)
     try {
       setLocationStatus("Finding address...");
       
@@ -79,7 +82,7 @@ export default function RequestHelp() {
         `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${latitude}&lon=${longitude}`,
         {
           headers: {
-            "User-Agent": "EmergencyHelpApp/1.0" // Required by Nominatim policy
+            "User-Agent": "EmergencyHelpApp/1.0"
           }
         }
       );
@@ -108,7 +111,7 @@ export default function RequestHelp() {
     if (e.target.checked) {
       getLiveLocation();
     } else {
-      setForm(prev => ({ ...prev, lat: null, lng: null, share_live_location: false }));
+      setForm(prev => ({ ...prev, lat: "", lng: "", share_live_location: false }));
       setLocationStatus("");
     }
   };
@@ -157,6 +160,13 @@ export default function RequestHelp() {
     return;
   }
 
+  // Log the form data right before submission
+  console.log("Submitting form with coordinates:", {
+    lat: form.lat,
+    lng: form.lng,
+    share_live_location: form.share_live_location
+  });
+
   try {
     const res = await fetch("http://localhost:5000/api/emergency", {
       method: "POST",
@@ -181,7 +191,10 @@ export default function RequestHelp() {
         contact_number: "",
         can_call: false,
         address: "",
-        severity: "medium"
+        severity: "medium",
+        lat: "",
+        lng: "",
+        share_live_location: false
       });
 
       // Navigate to status page after short delay
@@ -416,7 +429,7 @@ export default function RequestHelp() {
           <button 
             type="submit" 
             className="submit-btn"
-            disabled={isSubmitting}
+            disabled={isSubmitting || (form.share_live_location && !form.lat)}
           >
             {isSubmitting ? (
               <>

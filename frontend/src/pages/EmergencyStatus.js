@@ -5,12 +5,49 @@ import {
   Users, CheckCircle, XCircle, Loader 
 } from 'lucide-react';
 import './EmergencyStatus.css';
+import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import L from 'leaflet';
+import "leaflet/dist/leaflet.css";
+
+// Fix for default marker icons in React-Leaflet
+delete L.Icon.Default.prototype._getIconUrl;
+
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: require('leaflet/dist/images/marker-icon-2x.png'),
+  iconUrl: require('leaflet/dist/images/marker-icon.png'),
+  shadowUrl: require('leaflet/dist/images/marker-shadow.png'),
+});
+
+// Create custom icons for different marker types
+const emergencyIcon = new L.Icon({
+  iconUrl: require('leaflet/dist/images/marker-icon.png'),
+  iconRetinaUrl: require('leaflet/dist/images/marker-icon-2x.png'),
+  shadowUrl: require('leaflet/dist/images/marker-shadow.png'),
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41]
+});
+
+// You can create a different icon for volunteers (e.g., red marker)
+const volunteerIcon = new L.Icon({
+  iconUrl: require('leaflet/dist/images/marker-icon.png'),
+  iconRetinaUrl: require('leaflet/dist/images/marker-icon-2x.png'),
+  shadowUrl: require('leaflet/dist/images/marker-shadow.png'),
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41],
+  className: 'volunteer-marker' // You can add a CSS class to style it differently
+});
 
 const EmergencyStatus = () => {
   const { id } = useParams();
   const [requestData, setRequestData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
+  const [volunteerLocation, setVolunteerLocation] = useState(null);
+  const [showMap, setShowMap] = useState(false);
 
   useEffect(() => {
     const fetchStatus = async () => {
@@ -26,10 +63,26 @@ const EmergencyStatus = () => {
         
         if (data.success) {
           setRequestData(data.data);
+          
+          // DEBUG: Check what's in the data
+          console.log("Request Data:", data.data);
+          console.log("lat exists?", data.data.lat);
+          console.log("lng exists?", data.data.lng);
+          console.log("lat value:", data.data.lat);
+          console.log("lng value:", data.data.lng);
+
+          // If backend sends volunteer location
+          if (data.data.volunteer_location) {
+            setVolunteerLocation({
+              lat: data.data.volunteer_location.lat,
+              lng: data.data.volunteer_location.lng
+            });
+          }
         } else {
           setError(data.message || 'Failed to load request status');
         }
       } catch (err) {
+        console.error("Fetch error:", err);
         setError('Unable to load emergency status. Please check the request ID.');
       } finally {
         setIsLoading(false);
@@ -136,31 +189,26 @@ const EmergencyStatus = () => {
         </div>
 
         <div className="status-details">
-        <div className="detail-section">
-  <h3>Assigned Volunteers</h3>
-
-  {requestData.assigned_volunteers &&
-   requestData.assigned_volunteers.length > 0 ? (
-
-    <div className="volunteer-list">
-      {requestData.assigned_volunteers.map((volunteer) => (
-        <div key={volunteer.id} className="volunteer-card">
-          <User size={18} />
-          <span className="volunteer-name">
-            {volunteer.name}
-          </span>
-          <CheckCircle size={16} color="#4CAF50" />
-        </div>
-      ))}
-    </div>
-
-  ) : (
-    <div className="no-volunteer">
-      <Clock size={18} />
-      <span>No volunteer assigned yet</span>
-    </div>
-  )}
-</div>
+          <div className="detail-section">
+            <h3>Assigned Volunteers</h3>
+            {requestData.assigned_volunteers && requestData.assigned_volunteers.length > 0 ? (
+              <div className="volunteer-list">
+                {requestData.assigned_volunteers.map((volunteer) => (
+                  <div key={volunteer.id} className="volunteer-card">
+                    <User size={18} />
+                    <span className="volunteer-name">{volunteer.name}</span>
+                    <CheckCircle size={16} color="#4CAF50" />
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="no-volunteer">
+                <Clock size={18} />
+                <span>No volunteer assigned yet</span>
+              </div>
+            )}
+          </div>
+          
           <div className="detail-section">
             <h3>Emergency Details</h3>
             <div className="detail-grid">
@@ -242,6 +290,72 @@ const EmergencyStatus = () => {
           </button>
         </div>
       </div>
+
+      {/* Floating Map Button */}
+      {requestData.lat && requestData.lng && (
+        <button
+          className="floating-map-btn"
+          onClick={() => {
+            console.log("Button clicked");
+            console.log("Coordinates:", requestData.lat, requestData.lng);
+            setShowMap(!showMap);
+          }}
+        >
+          📍
+        </button>
+      )}
+
+      {/* Map Modal */}
+      {showMap && requestData.lat && requestData.lng && (
+        <div className="map-modal">
+          <div className="map-container-wrapper">
+            <button 
+              className="close-map-btn"
+              onClick={() => setShowMap(false)}
+            >
+              ✕
+            </button>
+
+            <MapContainer
+              key={`map-${showMap}`}
+              center={[Number(requestData.lat), Number(requestData.lng)]}
+              zoom={14}
+              style={{ height: '100%', width: '100%' }}
+            >
+              <TileLayer
+                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+              />
+
+              {/* Emergency Location */}
+              <Marker 
+                position={[Number(requestData.lat), Number(requestData.lng)]}
+                icon={emergencyIcon}
+              >
+                <Popup>
+                  <strong>Emergency Location</strong>
+                  <br />
+                  {requestData.address || 'No address provided'}
+                </Popup>
+              </Marker>
+
+              {/* Volunteer Live Location */}
+              {volunteerLocation && volunteerLocation.lat && volunteerLocation.lng && (
+                <Marker 
+                  position={[Number(volunteerLocation.lat), Number(volunteerLocation.lng)]}
+                  icon={volunteerIcon}
+                >
+                  <Popup>
+                    <strong>Volunteer Location 🚑</strong>
+                    <br />
+                    Responder is on the way
+                  </Popup>
+                </Marker>
+              )}
+            </MapContainer>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
