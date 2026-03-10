@@ -107,6 +107,51 @@ export default function RequestHelp() {
   }, 
   { enableHighAccuracy: true, timeout: 10000 });
 };
+
+const getCoordinatesFromAddress = async (typedAddress) => {
+  if (!typedAddress) return;
+
+  try {
+    setLocationStatus("Finding coordinates from address...");
+
+    const response = await fetch(
+      `https://nominatim.openstreetmap.org/search?format=jsonv2&q=${encodeURIComponent(typedAddress)}`,
+      { headers: { "User-Agent": "EmergencyHelpApp/1.0" } }
+    );
+
+    const data = await response.json();
+
+    if (data && data.length > 0) {
+      const { lat, lon } = data[0];
+      setForm(prev => ({
+        ...prev,
+        lat: parseFloat(lat),
+        lng: parseFloat(lon)
+      }));
+      setLocationStatus("Address converted to coordinates ✓");
+    } else {
+      setForm(prev => ({ ...prev, lat: null, lng: null }));
+      setLocationStatus("Could not find coordinates for this address.");
+    }
+  } catch (err) {
+    console.error("Geocoding error:", err);
+    setForm(prev => ({ ...prev, lat: null, lng: null }));
+    setLocationStatus("Error finding coordinates from address.");
+  }
+};
+
+const handleAddressChange = (e) => {
+  const { value } = e.target;
+  setForm(prev => ({ ...prev, address: value }));
+
+  if (value.trim().length > 5) { // only search when input is meaningful
+    clearTimeout(window.addressTimeout);
+    window.addressTimeout = setTimeout(() => {
+      getCoordinatesFromAddress(value);
+    }, 1000); // wait 1s after user stops typing
+  }
+};
+
   const handleLocationToggle = (e) => {
     if (e.target.checked) {
       getLiveLocation();
@@ -346,7 +391,7 @@ export default function RequestHelp() {
               name="address" 
               placeholder="Where is the emergency? (Street, landmark, city)" 
               value={form.address}
-              onChange={handleChange} 
+              onChange={handleAddressChange} 
             />
             <p className="field-hint">
               Provide as much detail as possible to help volunteers find you

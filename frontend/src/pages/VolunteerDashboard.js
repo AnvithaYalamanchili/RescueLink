@@ -216,34 +216,47 @@ const handleAcceptAssignment = async (requestId) => {
   }
 };
 useEffect(() => {
-  if (!assignments || assignments.length === 0) return;
+  if (!assignments || assignments.length === 0 || !volunteerData) return;
 
   const activeAssignment = assignments.find(
     a => a.status === "assigned" || a.status === "in_progress"
   );
 
-  if (!activeAssignment) {
-    // Stop GPS if no active assignment
-    if (watchIdRef.current) {
-      navigator.geolocation.clearWatch(watchIdRef.current);
-      watchIdRef.current = null;
-    }
-    return;
-  }
+  if (!activeAssignment) return;
 
-  console.log("🚑 Starting live tracking for emergency:", activeAssignment.id);
+  // Make sure we have both the assignment ID and the request ID
+  console.log("🚑 Starting live tracking for assignment:", {
+    assignmentId: activeAssignment.id,
+    requestId: activeAssignment.request_id,  // This is the important one!
+    emergencyType: activeAssignment.emergency_type
+  });
 
-  // Start GPS tracking
   watchIdRef.current = navigator.geolocation.watchPosition(
     (position) => {
-      socketRef.current.emit("volunteer_location_update", {
-        emergencyId: activeAssignment.emergency_id || activeAssignment.id,
-        volunteerId: volunteerData?.id,
-        latitude: position.coords.latitude,
-        longitude: position.coords.longitude
+      const lat = position.coords.latitude;
+      const lng = position.coords.longitude;
+
+      // IMPORTANT: Send the request_id, not the assignment id
+      const requestIdToSend = activeAssignment.request_id || activeAssignment.id;
+      
+      console.log("📡 Sending volunteer location:", {
+        volunteerId: volunteerData.id,
+        requestId: requestIdToSend,  // This should now be da73338a-9812-4dec-ae88-ab1039f2bb28
+        lat,
+        lng,
+        note: "Using request_id for room"
+      });
+
+      socketRef.current.emit("volunteerLocation", {
+        volunteerId: volunteerData.id,
+        requestId: requestIdToSend,  // Send the request_id
+        lat,
+        lng
       });
     },
-    (error) => console.error("GPS error:", error),
+    (error) => {
+      console.error("Location error:", error);
+    },
     {
       enableHighAccuracy: true,
       maximumAge: 0,
@@ -256,7 +269,6 @@ useEffect(() => {
       navigator.geolocation.clearWatch(watchIdRef.current);
     }
   };
-
 }, [assignments, volunteerData]);
 
   // Handle completing an assignment
@@ -544,7 +556,7 @@ useEffect(() => {
               <div className="assignment-actions">
                 <button 
                   className="btn-view"
-                  onClick={() => navigate(`/assignment/${assignment.id}`)}
+                  onClick={() => navigate(`/emergency/${assignment.request_id || assignment.id}`)}
                 >
                   View Details
                 </button>
@@ -711,7 +723,7 @@ useEffect(() => {
                     <>
                       <button 
                         className="btn-view"
-                        onClick={() => navigate(`/assignment/${assignment.id}`)}
+                          onClick={() => navigate(`/emergency/${assignment.request_id || assignment.id}`)}  // Use request_id
                       >
                         View Details
                       </button>

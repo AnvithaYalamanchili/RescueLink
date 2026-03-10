@@ -1,3 +1,6 @@
+/* EmergencyStatus.css - Complete Styling */
+
+/* ===== Base Container Styles ===== */
 .status-container {
   min-height: 100vh;
   display: flex;
@@ -7,6 +10,7 @@
   padding: 20px;
 }
 
+/* ===== Main Status Card ===== */
 .status-card {
   background: white;
   border-radius: 16px;
@@ -16,6 +20,7 @@
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
 }
 
+/* ===== Header Section ===== */
 .status-header {
   display: flex;
   justify-content: space-between;
@@ -56,6 +61,7 @@
   color: #333;
 }
 
+/* ===== Status Overview Section ===== */
 .status-overview {
   display: flex;
   flex-wrap: wrap;
@@ -117,21 +123,32 @@
   color: #666;
 }
 
+/* ===== Details Sections ===== */
 .status-details {
   display: flex;
   flex-direction: column;
   gap: 32px;
 }
 
+.detail-section {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  margin-bottom: 24px;
+}
+
 .detail-section h3 {
-  margin: 0 0 20px 0;
-  color: #1a237e;
-  font-size: 20px;
+  margin: 0 0 16px 0;
+  color: #1a1a1a;
+  font-size: 18px;
   font-weight: 600;
-  padding-bottom: 10px;
+  letter-spacing: 0.3px;
+  padding-bottom: 8px;
   border-bottom: 2px solid #f0f0f0;
 }
 
+/* ===== Detail Grid ===== */
 .detail-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -172,6 +189,7 @@
   text-transform: capitalize;
 }
 
+/* ===== Description Box ===== */
 .description-box {
   background: #f8fafc;
   padding: 24px;
@@ -184,6 +202,7 @@
   word-wrap: break-word;
 }
 
+/* ===== Progress Stats ===== */
 .progress-stats {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
@@ -217,6 +236,7 @@
   font-weight: 500;
 }
 
+/* ===== Info Box ===== */
 .info-box {
   background: #fff3e0;
   padding: 24px;
@@ -240,6 +260,66 @@
   margin-bottom: 0;
 }
 
+/* ===== Volunteer List ===== */
+.volunteer-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.volunteer-card {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  background-color: #f8f9fa;
+  border-radius: 10px;
+  border: 1px solid #e9ecef;
+  transition: all 0.2s ease;
+  animation: fadeIn 0.3s ease;
+}
+
+.volunteer-card:hover {
+  background-color: #ffffff;
+  border-color: #4CAF50;
+  box-shadow: 0 4px 12px rgba(76, 175, 80, 0.15);
+  transform: translateY(-2px);
+}
+
+.volunteer-name {
+  flex: 1;
+  margin: 0 12px;
+  font-size: 15px;
+  font-weight: 500;
+  color: #2c3e50;
+}
+
+.volunteer-card svg:first-child {
+  color: #6c757d;
+}
+
+.volunteer-card svg:last-child {
+  opacity: 0.8;
+}
+
+.no-volunteer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 32px 20px;
+  background-color: #f8f9fa;
+  border-radius: 10px;
+  border: 2px dashed #dee2e6;
+  color: #6c757d;
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.no-volunteer svg {
+  color: #adb5bd;
+}
+
+/* ===== Footer Section ===== */
 .status-footer {
   margin-top: 40px;
   padding-top: 20px;
@@ -279,7 +359,7 @@
   transform: translateY(0);
 }
 
-/* Loading State */
+/* ===== Loading State ===== */
 .status-loading {
   min-height: 100vh;
   display: flex;
@@ -296,10 +376,6 @@
   margin-bottom: 24px;
 }
 
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-
 .status-loading h3 {
   margin: 0 0 12px 0;
   color: #333;
@@ -312,187 +388,7 @@
   font-size: 16px;
 }
 
-/* Detail Section Container */
-.detail-section {
-  background: #ffffff;
-  border-radius: 12px;
-  padding: 20px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-  margin-bottom: 24px;
-}
-
-.detail-section h3 {
-  margin: 0 0 16px 0;
-  color: #1a1a1a;
-  font-size: 18px;
-  font-weight: 600;
-  letter-spacing: 0.3px;
-  padding-bottom: 8px;
-  border-bottom: 2px solid #f0f0f0;
-}
-
-/* Volunteer List Container */
-.volunteer-list {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-/* Individual Volunteer Card */
-.volunteer-card {
-  display: flex;
-  align-items: center;
-  padding: 12px 16px;
-  background-color: #f8f9fa;
-  border-radius: 10px;
-  border: 1px solid #e9ecef;
-  transition: all 0.2s ease;
-}
-
-.volunteer-card:hover {
-  background-color: #ffffff;
-  border-color: #4CAF50;
-  box-shadow: 0 4px 12px rgba(76, 175, 80, 0.15);
-  transform: translateY(-2px);
-}
-
-/* Volunteer Name */
-.volunteer-name {
-  flex: 1;
-  margin: 0 12px;
-  font-size: 15px;
-  font-weight: 500;
-  color: #2c3e50;
-}
-
-/* Icons Styling */
-.volunteer-card svg {
-  flex-shrink: 0;
-}
-
-.volunteer-card svg:first-child {
-  color: #6c757d;
-}
-
-.volunteer-card svg:last-child {
-  opacity: 0.8;
-}
-
-/* No Volunteer State */
-.no-volunteer {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  padding: 32px 20px;
-  background-color: #f8f9fa;
-  border-radius: 10px;
-  border: 2px dashed #dee2e6;
-  color: #6c757d;
-  font-size: 15px;
-  font-weight: 500;
-}
-
-.no-volunteer svg {
-  color: #adb5bd;
-}
-
-/* Optional: Animation for hover states */
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.volunteer-card {
-  animation: fadeIn 0.3s ease;
-}
-
-/* Optional: Responsive Design */
-@media (max-width: 768px) {
-  .detail-section {
-    padding: 16px;
-  }
-  
-  .volunteer-card {
-    padding: 10px 14px;
-  }
-  
-  .volunteer-name {
-    font-size: 14px;
-  }
-  
-  .no-volunteer {
-    padding: 24px 16px;
-  }
-}
-/* Floating Button */
-.floating-map-btn {
-  position: fixed;
-  bottom: 25px;
-  right: 25px;
-  width: 60px;
-  height: 60px;
-  border-radius: 50%;
-  background: #2196F3;
-  color: white;
-  font-size: 24px;
-  border: none;
-  cursor: pointer;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-  z-index: 1000;
-  transition: 0.3s;
-}
-
-.floating-map-btn:hover {
-  background: #1976D2;
-  transform: scale(1.1);
-}
-
-/* Map Modal Overlay */
-.map-modal {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0,0,0,0.6);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 2000;
-}
-
-/* Map Container */
-.map-container-wrapper {
-  position: relative;
-  width: 90%;
-  height: 80%;
-  background: white;
-  border-radius: 12px;
-  overflow: hidden;
-}
-
-/* Close Button */
-.close-map-btn {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  z-index: 2500;
-  background: #f44336;
-  color: white;
-  border: none;
-  padding: 6px 10px;
-  border-radius: 6px;
-  cursor: pointer;
-}
-
-/* Error State */
+/* ===== Error State ===== */
 .status-error {
   min-height: 100vh;
   display: flex;
@@ -522,8 +418,321 @@
   font-style: italic;
 }
 
-/* Responsive Design */
+/* ===== Floating Map Button ===== */
+.floating-map-btn {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #3a86ff 0%, #2667cc 100%);
+  color: white;
+  border: none;
+  font-size: 28px;
+  cursor: pointer;
+  box-shadow: 0 4px 15px rgba(58, 134, 255, 0.4);
+  z-index: 1000;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: pulse 2s infinite;
+}
+
+.floating-map-btn:hover {
+  transform: scale(1.1) rotate(5deg);
+  background: linear-gradient(135deg, #2667cc 0%, #1a4f99 100%);
+  box-shadow: 0 6px 20px rgba(58, 134, 255, 0.6);
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 4px 15px rgba(58, 134, 255, 0.4);
+  }
+  50% {
+    transform: scale(1.05);
+    box-shadow: 0 8px 25px rgba(58, 134, 255, 0.6);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 4px 15px rgba(58, 134, 255, 0.4);
+  }
+}
+
+/* ===== Map Modal ===== */
+.map-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(5px);
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  animation: modalFadeIn 0.3s ease-out;
+}
+
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Map Container Wrapper */
+.map-container-wrapper {
+  flex: 1;
+  position: relative;
+  margin: 20px;
+  background: white;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+  border: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Close Button */
+.close-map-btn {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  z-index: 10000;
+  background: rgba(255, 255, 255, 0.95);
+  color: #333;
+  border: none;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  font-size: 20px;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  font-weight: bold;
+}
+
+.close-map-btn:hover {
+  background: #f44336;
+  color: white;
+  transform: scale(1.1) rotate(90deg);
+  box-shadow: 0 6px 16px rgba(244, 67, 54, 0.4);
+}
+
+/* ===== Navigation Info Panel ===== */
+.navigation-info {
+  background: linear-gradient(135deg, #1a237e 0%, #311b92 100%);
+  padding: 16px 20px;
+  display: flex;
+  gap: 16px;
+  overflow-x: auto;
+  border-top: 2px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
+  min-height: 120px;
+  position: relative;
+  z-index: 10000;
+}
+
+.navigation-info::-webkit-scrollbar {
+  height: 8px;
+}
+
+.navigation-info::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+}
+
+.navigation-info::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 4px;
+}
+
+.navigation-info::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.5);
+}
+
+.navigation-info:empty::after {
+  content: "Waiting for volunteer locations...";
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 14px;
+  padding: 20px;
+  text-align: center;
+  width: 100%;
+  font-style: italic;
+}
+
+/* Navigation Cards */
+.nav-card {
+  background: white;
+  border-radius: 12px;
+  padding: 16px;
+  min-width: 240px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+  transition: all 0.3s ease;
+  border-left: 4px solid #4CAF50;
+  animation: cardSlideIn 0.3s ease-out;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+.nav-card:hover {
+  transform: translateY(-4px) scale(1.02);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.3);
+  border-left-width: 6px;
+}
+
+@keyframes cardSlideIn {
+  from {
+    transform: translateX(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.nav-card strong {
+  display: block;
+  margin-bottom: 12px;
+  font-size: 15px;
+  color: #1a237e;
+  border-bottom: 2px solid #f0f0f0;
+  padding-bottom: 8px;
+  font-weight: 700;
+}
+
+.nav-card div {
+  margin: 10px 0;
+  font-size: 14px;
+  color: #555;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 500;
+}
+
+.nav-card div:first-of-type::before {
+  content: "📍";
+  font-size: 16px;
+}
+
+.nav-card div:last-of-type::before {
+  content: "⏱️";
+  font-size: 16px;
+}
+
+/* ===== Map Marker Styles ===== */
+.volunteer-marker {
+  filter: hue-rotate(120deg) drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+}
+
+.emergency-marker {
+  filter: drop-shadow(0 2px 8px rgba(244, 67, 54, 0.6));
+}
+
+/* ===== Leaflet Popup Styles ===== */
+.leaflet-popup-content {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 13px;
+  line-height: 1.5;
+  min-width: 200px;
+  margin: 12px;
+}
+
+.leaflet-popup-content strong {
+  color: #1a237e;
+  font-size: 15px;
+  display: block;
+  margin-bottom: 6px;
+  border-bottom: 1px solid #f0f0f0;
+  padding-bottom: 4px;
+}
+
+.leaflet-popup-content small {
+  color: #666;
+  font-style: italic;
+  display: block;
+  margin-top: 6px;
+  font-size: 11px;
+}
+
+/* ===== Route Polyline Styling ===== */
+.leaflet-interactive {
+  stroke-dasharray: 8, 12;
+  stroke-opacity: 0.9;
+  animation: dashMove 40s linear infinite;
+}
+
+@keyframes dashMove {
+  to {
+    stroke-dashoffset: -1000;
+  }
+}
+
+/* ===== Map Loading State ===== */
+.map-loading {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.map-loading::after {
+  content: '';
+  width: 40px;
+  height: 40px;
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #3a86ff;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+/* ===== Tooltip Styles ===== */
+.volunteer-info-tooltip {
+  background: rgba(0,0,0,0.8);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 4px 8px;
+  font-size: 12px;
+}
+
+/* ===== Animations ===== */
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ===== Responsive Design ===== */
 @media (max-width: 768px) {
+  /* Main Card */
   .status-card {
     padding: 30px 20px;
   }
@@ -534,6 +743,16 @@
     align-items: flex-start;
   }
   
+  .status-title {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  
+  .status-title svg {
+    align-self: center;
+  }
+  
   .status-title h2 {
     font-size: 24px;
   }
@@ -541,6 +760,15 @@
   .status-overview {
     flex-direction: column;
     align-items: flex-start;
+  }
+  
+  /* Detail Sections */
+  .detail-section {
+    padding: 16px;
+  }
+  
+  .detail-section h3 {
+    font-size: 18px;
   }
   
   .detail-grid {
@@ -554,24 +782,154 @@
   .progress-item {
     padding: 20px;
   }
-}
-
-@media (max-width: 480px) {
-  .status-title {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 12px;
-  }
-  
-  .status-title svg {
-    align-self: center;
-  }
-  
-  .detail-section h3 {
-    font-size: 18px;
-  }
   
   .progress-number {
     font-size: 28px;
+  }
+  
+  .volunteer-card {
+    padding: 10px 14px;
+  }
+  
+  .volunteer-name {
+    font-size: 14px;
+  }
+  
+  .no-volunteer {
+    padding: 24px 16px;
+  }
+  
+  /* Map Elements */
+  .floating-map-btn {
+    bottom: 20px;
+    right: 20px;
+    width: 50px;
+    height: 50px;
+    font-size: 24px;
+  }
+  
+  .map-container-wrapper {
+    margin: 10px;
+    border-radius: 12px;
+  }
+  
+  .close-map-btn {
+    top: 10px;
+    right: 10px;
+    width: 35px;
+    height: 35px;
+    font-size: 18px;
+  }
+  
+  .navigation-info {
+    padding: 12px;
+    gap: 12px;
+    min-height: 100px;
+  }
+  
+  .nav-card {
+    min-width: 200px;
+    padding: 12px;
+  }
+  
+  .nav-card strong {
+    font-size: 14px;
+    margin-bottom: 8px;
+  }
+  
+  .nav-card div {
+    font-size: 12px;
+    margin: 8px 0;
+  }
+}
+
+@media (max-width: 480px) {
+  /* Main Card */
+  .status-title h2 {
+    font-size: 22px;
+  }
+  
+  .status-id {
+    font-size: 12px;
+    padding: 6px 12px;
+  }
+  
+  .status-badge,
+  .severity-badge,
+  .timestamp {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .progress-number {
+    font-size: 24px;
+  }
+  
+  .progress-label {
+    font-size: 12px;
+  }
+  
+  .info-box {
+    padding: 16px;
+  }
+  
+  .info-box li {
+    font-size: 13px;
+  }
+  
+  .footer-note {
+    font-size: 12px;
+  }
+  
+  .refresh-btn {
+    padding: 10px 24px;
+    font-size: 14px;
+  }
+  
+  /* Map Elements */
+  .floating-map-btn {
+    bottom: 15px;
+    right: 15px;
+    width: 45px;
+    height: 45px;
+    font-size: 22px;
+  }
+  
+  .map-container-wrapper {
+    margin: 5px;
+  }
+  
+  .nav-card {
+    min-width: 170px;
+    padding: 10px;
+  }
+  
+  .nav-card strong {
+    font-size: 13px;
+  }
+  
+  .nav-card div {
+    font-size: 11px;
+    margin: 6px 0;
+  }
+  
+  .leaflet-popup-content {
+    min-width: 150px;
+    font-size: 12px;
+  }
+}
+
+/* ===== Print Styles ===== */
+@media print {
+  .floating-map-btn,
+  .refresh-btn,
+  .close-map-btn,
+  .map-modal {
+    display: none !important;
+  }
+  
+  .status-card {
+    box-shadow: none;
+    border: 1px solid #ddd;
   }
 }
